@@ -1,0 +1,8 @@
+[package]
+name = "pj"
+version = "0.1.0"
+authors = ["RoccoDev <roccodev.business@gmail.com>"]
+
+[dependencies]
+serde_json = "1.0"
+termion = "*"
