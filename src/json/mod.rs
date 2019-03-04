@@ -15,18 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with pj.  If not, see <http://www.gnu.org/licenses/>.
 
-extern crate termion;
-extern crate serde_json;
+use serde_json::{Result, Value};
 
-pub mod json;
+pub fn parse(input: String) -> Result<()> {
+    let parsed: Value = serde_json::from_str(&input.as_str())?;
 
-use termion::event::Key;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
-use termion::{color, style};
-use std::io::{Write, stdout, stdin};
-fn main() {
-
-    let stdin = stdin();
-    let mut stdout = stdout().into_raw_mode().unwrap();
+    Ok(())
 }
