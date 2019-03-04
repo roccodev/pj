@@ -17,4 +17,7 @@
  along with pj.  If not, see <http://www.gnu.org/licenses/>.
 -->
 # pj
-JSON parser and visualizer for the command line, written in Rust.
+[![Crates.io](https://img.shields.io/badge/crates.io-v0.1.0-orange.svg?longCache=true)](https://crates.io/crates/pj)
+***
+
+`pj` (short for `P`arse `J`SON) is a JSON parser and visualizer for the command line, written in Rust.
