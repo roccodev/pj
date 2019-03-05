@@ -24,9 +24,12 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::{color, style};
-use std::io::{Write, stdout, stdin};
+use std::io::{self, BufRead, Write, stdout, stdin};
 fn main() {
 
     let stdin = stdin();
-    let mut stdout = stdout().into_raw_mode().unwrap();
+    // let mut stdout = stdout().into_raw_mode().unwrap();
+    let json = stdin.lock().lines().last().unwrap().unwrap();
+
+    json::parse(json);
 }

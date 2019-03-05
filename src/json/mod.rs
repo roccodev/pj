@@ -15,10 +15,74 @@
 // You should have received a copy of the GNU General Public License
 // along with pj.  If not, see <http://www.gnu.org/licenses/>.
 
-use serde_json::{Result, Value};
+use serde_json::{Result, Value, map};
 
 pub fn parse(input: String) -> Result<()> {
+    /* Parse the input string as JSON */
     let parsed: Value = serde_json::from_str(&input.as_str())?;
 
+   
+    match parsed {
+        /* If the result is an object, parse it */
+        Value::Object(map) => parse_object("/".to_string(), &map),
+
+        Value::Array(array) => parse_array("/".to_string(), &array),
+        _ => parse_other("/".to_string(), &parsed)
+    }
+
     Ok(())
+}
+
+fn parse_object(input_key: String, map: &map::Map<String, Value>) {
+
+    let iter = map.iter();
+
+    /* Iterate through the entries */
+    for (key, value) in iter {
+
+        let final_key = format!("{}/{}", input_key, key);
+
+        /* Check the value's type */
+        match *value {
+            /* If it's an object, recursively call this method on the value */
+            Value::Object(ref new_map) => parse_object(final_key, new_map),
+
+            /* If it's an array, call the parse_array method on the value */
+            Value::Array(ref array) => parse_array(final_key, array),
+            _ => parse_other(final_key, value)
+        }
+    }
+    
+}
+
+fn parse_array(key: String, array: &Vec<Value>) {
+    
+    let iter = array.iter();
+
+    /* Iterate through the items */
+    for (index, item) in iter.enumerate() {
+
+        let final_key = format!("{}/{}", key, index);
+
+        /* Check the item's type */
+        match *item {
+            Value::Object(ref map) => parse_object(final_key, map),
+            _ => parse_other(final_key, item)
+        }
+
+    }
+}
+
+fn parse_other(key: String, value: &Value) {
+    match *value {
+        Value::Null => print(key, "null".to_string()),
+        Value::Bool(ref b) => print(key, format!("{}", b)),
+        Value::Number(ref n) => print(key, format!("{}", n)),
+        Value::String(ref s) => print(key, format!(r#""{}""#, s)),
+        _ => ()
+    }
+}
+
+fn print(key: String, value: String) {
+    println!("Key: {}, Value: {}", key, value);
 }
