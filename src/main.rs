@@ -21,14 +21,14 @@ extern crate tui;
 
 pub mod json;
 
-use crossterm::{input, Screen, ClearType, Crossterm, TerminalInput};
+use crossterm::Screen;
 
-use std::io::{self, stdout, Read, Write};
+use std::io::{self, Read};
 
 use tui::backend::CrosstermBackend;
-use tui::layout::{Alignment, Constraint, Corner, Direction, Layout};
+use tui::layout::{Alignment, Constraint, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
+use tui::widgets::{Block, Borders, Paragraph, SelectableList, Text, Widget};
 use tui::Terminal;
 
 fn main() -> Result<(), io::Error> {
