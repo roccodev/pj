@@ -13,6 +13,6 @@ crossterm = "0.6"
 crossterm_input = "0.1.0"
 
 [dependencies.tui]
-git = "https://github.com/fdehau/tui-rs"
+version = "0.4.0"
 default-features = false
 features = ['crossterm']

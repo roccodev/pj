@@ -42,8 +42,9 @@ fn main() -> Result<(), io::Error> {
     let elements = json::parse(json).expect("Could not parse JSON.");
 
     let screen = Screen::default();
-    let alt = screen.enable_alternate_modes(true).unwrap();
-    let backend = CrosstermBackend::with_alternate_screen(alt).unwrap();
+    let _alt = screen.enable_alternate_modes(true).unwrap();
+    
+    let backend = CrosstermBackend::new();
 
     let mut terminal = Terminal::new(backend).unwrap();
     terminal.hide_cursor().unwrap();
