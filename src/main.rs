@@ -22,7 +22,7 @@ extern crate tui;
 pub mod events;
 pub mod json;
 
-use std::io;
+use std::io::{self, Read};
 use termion::event::Key;
 use termion::input::MouseTerminal;
 use termion::raw::IntoRawMode;
@@ -36,24 +36,29 @@ use tui::Terminal;
 use events::{Event, Events};
 
 fn main() -> Result<(), io::Error> {
-    let stdout = io::stdout().into_raw_mode().unwrap();
+    let mut json = String::new();
+    let stdin = io::stdin();
+    let mut stdin = stdin.lock();
+    stdin
+        .read_to_string(&mut json)
+        .expect("Could not read from STDIN");
+
+    let tty = termion::get_tty().unwrap();
+
+    let stdout = tty.into_raw_mode().expect("Failed to get STDOUT");
     let stdout = MouseTerminal::from(stdout);
     let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend).unwrap();
     terminal.hide_cursor().unwrap();
 
-    let elements = vec![
-        ("Test1", "2"),
-        ("Test2", "4.0"),
-        ("Test3", r#""The lazy fox""#),
-    ];
+    let elements = json::parse(json).unwrap();
 
     let elements_iter = elements.iter();
 
     let mut keys: Vec<String> = vec![];
 
-    for &(key, value) in elements_iter {
+    for (ref key, ref value) in elements_iter {
         &keys.push(key.to_string());
     }
 
@@ -78,7 +83,7 @@ fn main() -> Result<(), io::Error> {
                 .highlight_symbol(">")
                 .render(&mut f, chunks[0]);
             {
-                let (_key, value) = elements[selected.unwrap_or(0)];
+                let (ref _key, ref value) = elements[selected.unwrap_or(0)];
                 let text = [Text::raw(value)];
 
                 Paragraph::new(text.iter())
@@ -123,22 +128,4 @@ fn main() -> Result<(), io::Error> {
             _ => {}
         }
     }
-}
-
-fn old_main() {
-    // let stdin = stdin();
-    // let json = stdin.lock().lines().last().unwrap().unwrap();
-
-    let stdout = io::stdout().into_raw_mode().unwrap();
-    let backend = TermionBackend::new(stdout);
-    let mut terminal = Terminal::new(backend).unwrap();
-    terminal.draw(|mut f| {
-        let size = f.size();
-        Block::default()
-            .title("JSON Result")
-            .borders(Borders::ALL)
-            .render(&mut f, size);
-    });
-
-    // json::parse(json);
 }
