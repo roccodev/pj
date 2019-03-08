@@ -17,7 +17,32 @@
  along with pj.  If not, see <http://www.gnu.org/licenses/>.
 -->
 # pj
-[![Crates.io](https://img.shields.io/badge/crates.io-v0.1.0-orange.svg?longCache=true)](https://crates.io/crates/pj)
+[![Crates.io](https://img.shields.io/badge/crates.io-v0.1.0-orange.svg?longCache=true)](https://crates.io/crates/pj)  
+![Showcase](https://roccodev.pw/img/pj_terminal.png)
 ***
 
 `pj` (short for `P`arse `J`SON) is a JSON parser and visualizer for the command line, written in Rust.
+
+# Usage
+`pj` reads input from `stdin`. This means you can pipe stuff into it. For example:  
+```sh
+curl "https://rocco.dev/example.json" | pj
+```
+## Controls
+Use arrow keys (`↑` `↓`) to navigate the keys.  
+You can also use `Home` and `End` to quickly go to the top or bottom of an object.
+
+Use `q` to quit.
+
+# Install
+## Cross-platform
+```sh
+cargo install pj
+```
+## Arch Linux
+`pj` is available in the [Arch User Repository](https://aur.archlinux.org/packages/pj/).
+## Other distributions
+RPM and DEB packages are available in the [Releases](https://github.com/RoccoDev/pj/releases) tab.
+
+# License
+This project is licensed under the [GPLv3](LICENSE) license.
