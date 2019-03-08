@@ -15,25 +15,21 @@
 // You should have received a copy of the GNU General Public License
 // along with pj.  If not, see <http://www.gnu.org/licenses/>.
 
+extern crate crossterm;
 extern crate serde_json;
-extern crate termion;
 extern crate tui;
 
-pub mod events;
 pub mod json;
 
-use std::io::{self, Read};
-use termion::event::Key;
-use termion::input::MouseTerminal;
-use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
-use tui::backend::TermionBackend;
+use crossterm::{input, Screen, ClearType, Crossterm, TerminalInput};
+
+use std::io::{self, stdout, Read, Write};
+
+use tui::backend::CrosstermBackend;
 use tui::layout::{Alignment, Constraint, Corner, Direction, Layout};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, SelectableList, Text, Widget};
 use tui::Terminal;
-
-use events::{Event, Events};
 
 fn main() -> Result<(), io::Error> {
     let mut json = String::new();
@@ -43,30 +39,120 @@ fn main() -> Result<(), io::Error> {
         .read_to_string(&mut json)
         .expect("Could not read from STDIN");
 
-    let tty = termion::get_tty().unwrap();
+    let elements = json::parse(json).expect("Could not parse JSON.");
 
-    let stdout = tty.into_raw_mode().expect("Failed to get STDOUT");
-    let stdout = MouseTerminal::from(stdout);
-    let stdout = AlternateScreen::from(stdout);
-    let backend = TermionBackend::new(stdout);
+    let screen = Screen::default();
+    let alt = screen.enable_alternate_modes(true).unwrap();
+    let backend = CrosstermBackend::with_alternate_screen(alt).unwrap();
+
     let mut terminal = Terminal::new(backend).unwrap();
     terminal.hide_cursor().unwrap();
 
-    let elements = json::parse(json).unwrap();
 
     let elements_iter = elements.iter();
 
     let mut keys: Vec<String> = vec![];
 
-    for (ref key, ref value) in elements_iter {
+    for (ref key, ref _value) in elements_iter {
         &keys.push(key.to_string());
     }
 
-    let evts = Events::new();
-
     let mut selected = None;
 
+    let mut i_key = crossterm::input().read_async().bytes();
+
+    let mut arrow_stage = 0;
+
     loop {
+        let key_r = i_key.next();
+        if key_r.is_some() {
+            let key_opt = key_r.unwrap();
+            if key_opt.is_ok() {
+                let key = key_opt.unwrap();
+
+                match key {
+                    113 /* 'q' */ => {
+                        return Ok(());
+                    }
+
+                    /* Arrow stages
+
+                        Arrow inputs are sent one after each other, in this order:
+                        27 91 [key]
+
+                        where [key] is 65 for Up, 66 for Down and so on.
+                    */
+
+                    27 => {
+                        if arrow_stage == 0 {
+                            arrow_stage = 1;
+                        }
+                    }
+
+                    91 =>  {
+                        if arrow_stage == 1 {
+                            arrow_stage = 2;
+                        }
+                    }
+
+                    /* Up */
+                    65 => {
+                        if arrow_stage == 2 {
+                            arrow_stage = 0;
+
+                            selected = 
+                            if let Some(selected) = selected {
+                                if selected > 0 {
+                                    Some(selected - 1)
+                                } else {
+                                    Some(keys.len() - 1)
+                                }
+                            } else {
+                                Some(0)
+                            }
+                        }
+                    }
+
+                    /* Down */
+                    66 => {
+                        if arrow_stage == 2 {
+                            arrow_stage = 0;
+
+                            selected = 
+                            if let Some(selected) = selected {
+                                if selected >= keys.len() - 1 {
+                                    Some(0)
+                                } else {
+                                    Some(selected + 1)
+                                }
+                            } else {
+                                Some(0)
+                            }
+                        }
+                    }
+
+                    /* End */
+                    70 => {
+                        if arrow_stage == 2 {
+                            arrow_stage = 0;
+
+                            selected = Some(elements.len() - 1);
+                        }
+                    }
+
+                    /* Home */
+                    72 => {
+                        if arrow_stage == 2 {
+                            arrow_stage = 0;
+
+                            selected = Some(0);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
         terminal.draw(|mut f| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
@@ -92,40 +178,5 @@ fn main() -> Result<(), io::Error> {
                     .render(&mut f, chunks[1]);
             }
         })?;
-
-        match evts.next().unwrap() {
-            Event::Input(input) => match input {
-                Key::Char('q') => {
-                    return Ok(());
-                }
-                Key::Left => {
-                    selected = None;
-                }
-                Key::Down => {
-                    selected = if let Some(selected) = selected {
-                        if selected >= keys.len() - 1 {
-                            Some(0)
-                        } else {
-                            Some(selected + 1)
-                        }
-                    } else {
-                        Some(0)
-                    }
-                }
-                Key::Up => {
-                    selected = if let Some(selected) = selected {
-                        if selected > 0 {
-                            Some(selected - 1)
-                        } else {
-                            Some(keys.len() - 1)
-                        }
-                    } else {
-                        Some(0)
-                    }
-                }
-                _ => {}
-            },
-            _ => {}
-        }
     }
 }
