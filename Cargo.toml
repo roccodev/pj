@@ -1,6 +1,6 @@
 [package]
 name = "pj"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["RoccoDev <roccodev.business@gmail.com>"]
 description = "JSON parser and visualizer."
 license = "GPL-3.0-or-later"
