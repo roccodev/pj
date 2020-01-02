@@ -13,7 +13,7 @@ crossterm = "0.6"
 crossterm_input = "0.1.0"
 
 [dependencies.tui]
-version = "0.4.0"
+version = "0.5.1"
 default-features = false
 features = ['crossterm']
 [package.metadata.rpm.cargo]
